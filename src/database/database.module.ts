@@ -29,7 +29,9 @@ export class DatabaseModule {
                 database: config.datasource.database,
               },
               migrations: {
-                tableName: 'migrations'
+                tableName: 'knex_migrations',
+                directory:'./migrations',
+                extension: 'ts'
               }
             },
           }),
