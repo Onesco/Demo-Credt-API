@@ -6,13 +6,15 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { datasource } from './config/env.config';
 
-import { UserModule } from './app/user/user.module'
-import { WalletModule } from './app/wallet/wallet.module'
-import {TransferModule} from './app/transfer/transfer.module'
+import { UserModule } from './app/user/user.module';
+import { WalletModule } from './app/wallet/wallet.module';
+import {TransferModule} from './app/transfer/transfer.module';
+import { AuthModule } from './app/auth/auth.module';
 
 @Module({
   imports: [
     DatabaseModule.forRoot({config:{datasource}}),
+    AuthModule,
     UserModule,
     WalletModule,
     TransferModule
