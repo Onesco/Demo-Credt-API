@@ -8,7 +8,6 @@ import { datasource } from './config/env.config';
 
 import { UserModule } from './app/user/user.module';
 import { WalletModule } from './app/wallet/wallet.module';
-import {TransferModule} from './app/transfer/transfer.module';
 import { AuthModule } from './app/auth/auth.module';
 
 @Module({
@@ -17,7 +16,6 @@ import { AuthModule } from './app/auth/auth.module';
     AuthModule,
     UserModule,
     WalletModule,
-    TransferModule
   ],
   controllers: [AppController],
   providers: [AppService],
