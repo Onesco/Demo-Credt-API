@@ -16,7 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    const user = await this.userService.findOneByEmail(payload.email);
+    const user = await this.userService.findOneByEmail(payload.username);
     if (!user) {
       throw new ForbiddenException('Invalid access token');
     };
