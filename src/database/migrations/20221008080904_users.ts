@@ -10,6 +10,7 @@ export async function up(knex: Knex): Promise<void> {
         table.string('password').notNullable();
         table.dateTime('created_at').defaultTo(knex.fn.now());
         table.dateTime('updated_at');
+        table.enu('role', ['ADMIN, USER, SUPERUSER'])
     })
 }
 
