@@ -1,26 +1,24 @@
-import { Injectable } from '@nestjs/common';
-import { CreateWalletDto } from './dto/create-wallet.dto';
-import { UpdateWalletDto } from './dto/update-wallet.dto';
+import { Injectable, Logger } from '@nestjs/common';
+
+import { DatabaseService } from '../../database/database.service';
+
+type IwalletFilter = {
+  id?: number;
+  user_id?: number;
+}
 
 @Injectable()
 export class WalletService {
-  create(createWalletDto: CreateWalletDto) {
-    return 'This action adds a new wallet';
+  constructor(private readonly databaseService: DatabaseService){}
+
+  knex = this.databaseService.getDbHandler();
+  private readonly logger = new Logger(WalletService.name);
+  
+  async findAll() {
+    return await this.knex('wallets');
   }
 
-  findAll() {
-    return `This action returns all wallet`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} wallet`;
-  }
-
-  update(id: number, updateWalletDto: UpdateWalletDto) {
-    return `This action updates a #${id} wallet`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} wallet`;
+  async findOne(filter: IwalletFilter) {
+    return await this.knex('wallets').where(filter).first();
   }
 }
