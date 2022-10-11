@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { KnexModule } from 'nestjs-knex';
 import * as dotenv from 'dotenv';
 import { DynamicModule, Module } from '@nestjs/common';
@@ -30,9 +29,9 @@ export class DatabaseModule {
               },
               migrations: {
                 tableName: 'knex_migrations',
-                directory:'./migrations',
-                extension: 'ts'
-              }
+                directory: './migrations',
+                extension: 'ts',
+              },
             },
           }),
         }),

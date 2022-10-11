@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 
 import { AppController } from './app.controller';
@@ -12,7 +11,7 @@ import { AuthModule } from './app/auth/auth.module';
 
 @Module({
   imports: [
-    DatabaseModule.forRoot({config:{datasource}}),
+    DatabaseModule.forRoot({ config: { datasource } }),
     AuthModule,
     UserModule,
     WalletModule,

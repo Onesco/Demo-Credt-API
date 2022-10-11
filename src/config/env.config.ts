@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -34,14 +33,15 @@ export const DB_PASSWORD = env.DB_PASSWORD;
 export const DB_NAME = env.DB_NAME;
 export const DB_HOST = env.DB_HOST;
 export const DEFAULT_PAGE_LIMIT = 50;
-export const datasource = appEnv === 'pipeline' || appEnv === 'test'
+export const datasource =
+  appEnv === 'pipeline' || appEnv === 'test'
     ? {
         host: env.DB_HOST_TEST,
         port: parseInt(env.DB_PORT_TEST),
         username: env.DB_USERNAME_TEST,
         password: env.DB_PASSWORD_TEST,
         database: env.DB_NAME_TEST,
-        client: env.DB_CLIENT
+        client: env.DB_CLIENT,
       }
     : {
         host: DB_HOST,
@@ -49,9 +49,9 @@ export const datasource = appEnv === 'pipeline' || appEnv === 'test'
         username: process.env.DB_USERNAME,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
-        client: env.DB_CLIENT
-    };
+        client: env.DB_CLIENT,
+      };
 
 export const SHA_512_HASH = env.SHA_512_HASH;
 export type DatasourceConfig = typeof datasource;
-export const jwtConstants = {secret: env.JWT_SECRET};
+export const jwtConstants = { secret: env.JWT_SECRET };
