@@ -12,6 +12,6 @@ export class WalletController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.walletService.findOne({id: +id});
+    return this.walletService.findOne({ id: +id });
   }
 }

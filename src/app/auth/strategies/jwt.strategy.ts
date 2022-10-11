@@ -19,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.userService.findOneByEmail(payload.username);
     if (!user) {
       throw new ForbiddenException('Invalid access token');
-    };
+    }
     return user;
   }
 }
