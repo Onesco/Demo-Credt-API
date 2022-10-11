@@ -3,8 +3,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UseGuards }
 
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import {FundUserDto} from './dto/fund-user.dto'
+import { UpdateFundDto, TransferFundDto } from './dto/update-fund.dto';
+import {FundUserDto} from './dto/fund-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('users')
@@ -31,5 +31,17 @@ export class UserController {
   @Post('fund')
   async fundAccount(@Body() fundUserDto: FundUserDto, @Request() req){
     return this.userService.fund(fundUserDto, req.user.id)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('withdraw')
+  async withdrawAmount(@Body() updateFundDto: UpdateFundDto, @Request() req){
+    return this.userService.withdrawFund(updateFundDto.amount, req.user.id)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('transfer')
+  async transferFund(@Body() transferFundDto: TransferFundDto, @Request() req){
+    return this.userService.transferFund(transferFundDto.amount, req.user.id, transferFundDto.to)
   }
 }

@@ -5,14 +5,13 @@ import {
   HttpStatus, 
   HttpException,
   ForbiddenException, 
+  BadRequestException,
   Logger
 } from '@nestjs/common';
 import { randomUUID } from 'crypto'
-
 const uuid = randomUUID()
 
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import {FundUserDto} from './dto/fund-user.dto';
 import { DatabaseService } from '../../database/database.service';
 import { hashUtils } from "../../utils/utils.lib";
@@ -24,7 +23,8 @@ export class UserService {
   constructor(
     private databaseService: DatabaseService,
     private walletService: WalletService
-    ){};
+  ){};
+
   knex = this.databaseService.getDbHandler();
   private readonly logger = new Logger(UserService.name)
 
@@ -69,6 +69,17 @@ export class UserService {
 
   async fund(fundUserDto: FundUserDto, user_id: number){
     const {amount, txn_type, purpose} = fundUserDto
+
+     //  check if amount is less than 0
+     if(amount < 0){
+      throw new BadRequestException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: ` cant withdraw such ${amount} amount` 
+        }
+      )
+    };
+
     const wallet  = await this.walletService.findOne({user_id});
 
     // create transaction
@@ -76,7 +87,7 @@ export class UserService {
     let trx_id
     this.knex.transaction(trx => {
       return trx
-        .insert({wallet_id: wallet.id, amount, txn_type, reference:uuid, purpose})
+        .insert({wallet_id: wallet.id, amount, txn_type, reference:uuid})
         .into('transactions')
         .then( transaction_id => {
           trx_id = transaction_id;
@@ -84,10 +95,10 @@ export class UserService {
         })
       })
       .then(wallet_id => {
-        console.log(`${wallet_id} id funded`)
+        this.logger.log(` id ${wallet_id} was funded`)
     })
     .catch(function(error) {
-      console.error(error);
+      this.logger.error(error);
       return new HttpException(`transfer of fun aborted due to: ${error}`, 500)
     });
     return {
@@ -97,4 +108,146 @@ export class UserService {
     }
   }
   
+  async withdrawFund(amount: number, user_id: number){
+  
+    //  check if amount is less than 0
+    if(amount < 0){
+      throw new BadRequestException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: ` cant withdraw such ${amount} amount` 
+        }
+      )
+    };
+
+    const wallet  = await this.walletService.findOne({user_id});
+
+    //  check if the user has up the required balance in his account
+    if(wallet && wallet.balance < amount){
+      throw new BadRequestException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: `${wallet.balance} is too low for this ${amount} of transaction` 
+        }
+      )
+    };
+    // grand access to create a transaction
+    // create transaction
+    let trx_id
+    this.knex.transaction(trx => {
+      return trx
+        .insert({wallet_id: wallet.id, amount, txn_type: 'DEBIT', reference:uuid})
+        .into('transactions')
+        .then( transaction_id => {
+          trx_id = transaction_id;
+          return trx('wallets').where({id:wallet.id, user_id}).decrement('balance', amount).update({updated_at: new Date()});
+        })
+      })
+      .then(wallet_id => {
+        this.logger.log(`${amount} withdrawed from this ${wallet_id}`)
+    })
+    .catch(function(error) {
+      this.logger.log(error);
+      return new HttpException(`withdrawal of fund aborted due to: ${error}`, 500)
+    });
+    return {
+      message: "withdrawal successfully!",
+      trx_id,
+      amount
+    }
+  }
+
+  async transferFund(amount: number, from: number, to: number): Promise<any> {
+    
+    //  check if amount is less than 0
+    if(amount < 0){
+      throw new BadRequestException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: ` cant withdraw such ${amount} amount` 
+        }
+      )
+    };
+
+    const senderWallet  = await this.walletService.findOne({user_id:from});
+
+    const balance_before = senderWallet.balance
+
+    //  check if the sender user has up the required balance in his/her wallet
+    if(senderWallet && senderWallet.balance < amount){
+      throw new BadRequestException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: `${senderWallet.balance} is too low for this ${amount} of transaction` 
+        }
+      )
+    };
+   
+    // check for receiver's wallet detail
+    const receiverWallet  = await this.walletService.findOne({user_id:to});
+    if(!receiverWallet){
+      throw new BadRequestException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: `receiver wallet id: ${receiverWallet.id} does not exit` 
+        }
+      )
+    };
+    // check if sender and receiever wallets are thesame
+    if(receiverWallet.id === senderWallet.id){
+      throw new BadRequestException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: `you can't transfer fund from your wallet id: ${from} to your wallet id: ${to}` 
+        }
+      )
+    };
+    
+    // create a transaction
+    let trx_id
+    this.knex.transaction((trx) => {
+      return trx
+        .insert({wallet_id: senderWallet.id, amount, txn_type: 'TRANSFER', reference:uuid})
+        .into('transactions')
+        .then( transaction_id => {
+          trx_id = transaction_id;
+          this.logger.log(`transaction created ${transaction_id}`);
+          return trx('wallets').where({id:senderWallet.id, user_id:from}).decrement('balance', amount).update({updated_at: new Date()});
+        })
+        .then(
+          sender_id => {
+          this.logger.log(`sending done ${sender_id}`);
+          return trx('wallets').where({id: receiverWallet.id, user_id:to}).increment('balance', amount).update({updated_at: new Date()});
+        })
+        .then(
+          async receiver_id =>{
+            this.logger.log(`receiver with id ${receiver_id} received`);
+            const updatedSender = await trx('wallets').where({id:senderWallet.id, user_id:from}).first()
+            const balance_after = updatedSender.balance
+            return trx('transfers').insert({transaction_id: trx_id, from, to, balance_before, balance_after: balance_after})
+        })
+      })
+      .then(transfer_id => {
+        this.logger.log(`this ${amount} has being transferred from you id:${from}, to ${to} with transfer id: ${transfer_id}`)
+    })
+    .catch(function(error) {
+      this.logger.log(error);
+      return new HttpException(`transfer of fund aborted due to: ${error}`, 500)
+    })
+
+    return {
+      message: "transfer successfully!",
+      trx_id,
+      amount,
+      from,
+      to
+    }
+  }
+
+  async checkBalance(user_id: number){
+    const wallet  = await this.walletService.findOne({user_id});
+    return {
+      accountBalance: wallet.balance,
+    }
+  }
 }
