@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, HttpCode } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { UserService } from '../user/user.service';
 import { hashUtils } from '../../utils/utils.lib';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 
 type JwtPayload = {
   username: string;
@@ -33,5 +34,10 @@ export class AuthService {
     return {
       accessToken: this.jwtService.sign(payload),
     };
+  }
+
+  @HttpCode(201)
+  async register(createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
   }
 }

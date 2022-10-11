@@ -10,7 +10,6 @@ import {
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateFundDto, TransferFundDto } from './dto/update-fund.dto';
 import { FundUserDto } from './dto/fund-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -18,11 +17,6 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Post('signup')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
-  }
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)

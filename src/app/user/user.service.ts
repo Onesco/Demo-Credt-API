@@ -26,7 +26,6 @@ export class UserService {
   knex = this.databaseService.getDbHandler();
   private readonly logger = new Logger(UserService.name);
 
-  @HttpCode(201)
   async create(createUserDto: CreateUserDto) {
     this.logger.log(`Registering user`);
     const { first_name, last_name, email, password } = createUserDto;

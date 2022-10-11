@@ -18,7 +18,6 @@ describe('AppController', () => {
     it('should be defined', () => {
       expect(appController).toBeDefined();
     });
-    console.log(appController.getHello());
     it('should return "Hello World!"', () => {
       expect(appController.getHello()).toBe('Hello World!');
     });
