@@ -40,10 +40,10 @@ $ npm run start:prod
 ```
 
 ## Configuring the application
-from the root of the application you will see a [.env.example](.env.example) file that illustrate all the needed configuration you need configure, like database name, database password etc. Change the values for all the environment variables.
+from the root of the application you will see a <a href='.env.example'>.env.example </a> file that illustrate all the needed configuration you need configure, like database name, database password etc. Change the values for all the environment variables.
 
 ## Running migrations
-in order to create all the nedeed database tables, you need to run following knex migration commands
+in order to create all the needed database tables, you need to run following knex migration commands
 
 ```bash
 # latest migration
