@@ -6,7 +6,7 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('wallet_id').unsigned();
     table.enu('txn_type', ['CREDIT', 'DEBIT', 'LOAN', 'REPAY', 'TRANSFER']);
     table.float('amount').notNullable();
-    table.uuid('reference');
+    table.uuid('reference').notNullable();
     table.dateTime('created_at').defaultTo(knex.fn.now());
     table.dateTime('updated_at');
 
