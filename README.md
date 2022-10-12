@@ -1,9 +1,9 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
- <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-
 # Demo Credit SERVER API
+Demo Credit Server API is a [nestjs](https://nestjs.com) projects that is built wit tje following technologies 
+* NodeJS (LTS version)
+* KnexJS ORM
+* MySQL database
+* Typescript (optional)
 
 ## Description
 
@@ -38,6 +38,37 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+## Running migrations
+in order to create all the nedeed database tables, you need to run following knex migration commands
+
+```bash
+# latest migration
+$ npm run migrate:latest
+
+# or 
+# migration up
+$ npm run migrate:up
+
+# drop tables
+$ npm run migrate:up
+```
+you can also run migrations for each migration files as
+
+```bash
+# migrate table
+$ knex migrate:up <file name>
+
+# drop table
+$ knex migrate:down <file name>
+
+```
+you can also create a new migration file by running
+
+```bash
+# create migration
+$ knex create migrate <file name>
+```
+you can visit [knex.js migration](https://knexjs.org/guide/migrations.html) page to learn all the commands you can perform
 
 ## Test
 
@@ -60,15 +91,12 @@ http://localhost:4000/api
 http://onesmus-okonkw-lendsqr-be-test/api
 
 
-## Support
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
 ## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- Author - [Onesmus Okonkwo]
+
 
 ## License
 
