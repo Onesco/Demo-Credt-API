@@ -4,11 +4,8 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { hashUtils } from '../../utils/utils.lib';
 import { CreateUserDto } from '../user/dto/create-user.dto';
-
-type JwtPayload = {
-  username: string;
-  sub: string;
-};
+import { JwtPayload } from '../types/type.jwtpayload';
+import { IUser } from '../types/type.user';
 
 @Injectable()
 export class AuthService {
@@ -29,8 +26,12 @@ export class AuthService {
     return null;
   }
 
-  login(user: any) {
-    const payload: JwtPayload = { username: user.email, sub: user.id };
+  login(user: IUser) {
+    const payload: JwtPayload = {
+      username: user.email,
+      sub: user.id,
+      role: user.role,
+    };
     return {
       accessToken: this.jwtService.sign(payload),
     };
