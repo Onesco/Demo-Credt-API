@@ -15,6 +15,7 @@ import { FundUserDto } from './dto/fund-user.dto';
 import { DatabaseService } from '../../database/database.service';
 import { hashUtils } from '../../utils/utils.lib';
 import { WalletService } from '../wallet/wallet.service';
+import { IUser } from '../types/type.user';
 
 @Injectable()
 export class UserService {
@@ -28,7 +29,9 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
     this.logger.log(`Registering user`);
-    const { first_name, last_name, email, password } = createUserDto;
+    const { first_name, last_name, email, password, role } = createUserDto;
+
+    const userRole = role ? role : 'USER';
 
     const user = await this.knex('users').where({ email }).first();
     if (user && user.id) {
@@ -39,9 +42,12 @@ export class UserService {
     }
     const hashedPassword = hashUtils.hash(password);
     const user_name = `${first_name} ${last_name}`.toLocaleUpperCase();
-    const user_id = await this.knex
-      .table('users')
-      .insert({ user_name, email, password: hashedPassword });
+    const user_id = await this.knex.table('users').insert({
+      user_name,
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      role: userRole,
+    });
 
     // creating user wallet upon registration
     await this.knex('wallets').insert({ user_id, balance: 0.0 });
@@ -49,9 +55,19 @@ export class UserService {
     return `user ${email} created with id:  ${user_id}`;
   }
 
-  async findAll() {
+  async findAll(user: IUser) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException({
+        status: HttpStatus.FORBIDDEN,
+        error: ` you don't have right to this content`,
+      });
+    }
     const users = await this.knex('users');
     return users;
+  }
+
+  async findMe(user: IUser) {
+    return await this.findOneByEmail(user.email);
   }
 
   async findOneByEmail(email: string) {
@@ -64,26 +80,40 @@ export class UserService {
     return user;
   }
 
+  async findOne(id: number, user: IUser) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException({
+        status: HttpStatus.FORBIDDEN,
+        error: ` you don't have right to this content`,
+      });
+    }
+    return await this.findOneById(id);
+  }
+
   async fund(fundUserDto: FundUserDto, user_id: number) {
-    const { amount, txn_type } = fundUserDto;
+    const { amount } = fundUserDto;
 
     //  check if amount is less than 0
     if (amount < 0) {
       throw new BadRequestException({
         status: HttpStatus.BAD_REQUEST,
-        error: ` cant withdraw such ${amount} amount`,
+        error: ` cant fund account with such negative ${amount} amount`,
       });
     }
 
     const wallet = await this.walletService.findOne({ user_id });
-
     // create transaction
     // Using trx as a query builder
     let trx_id;
     this.knex
       .transaction((trx) => {
         return trx
-          .insert({ wallet_id: wallet.id, amount, txn_type, reference: uuid })
+          .insert({
+            wallet_id: wallet.id,
+            amount,
+            txn_type: 'CREDIT',
+            reference: uuid,
+          })
           .into('transactions')
           .then((transaction_id) => {
             trx_id = transaction_id;
@@ -150,7 +180,7 @@ export class UserService {
           });
       })
       .then((wallet_id) => {
-        this.logger.log(`${amount} withdrawed from this ${wallet_id}`);
+        this.logger.log(`${amount} withdraw from this ${wallet_id}`);
       })
       .catch(function (error) {
         this.logger.log(error);
@@ -189,10 +219,11 @@ export class UserService {
 
     // check for receiver's wallet detail
     const receiverWallet = await this.walletService.findOne({ user_id: to });
+    console.log(receiverWallet);
     if (!receiverWallet) {
       throw new BadRequestException({
         status: HttpStatus.BAD_REQUEST,
-        error: `receiver wallet id: ${receiverWallet.id} does not exit`,
+        error: `receiver wallet id: ${to} does not exit`,
       });
     }
     // check if sender and receiever wallets are thesame
@@ -272,5 +303,18 @@ export class UserService {
     return {
       accountBalance: wallet.balance,
     };
+  }
+
+  async getTransactions(user_id: number) {
+    const wallet = await this.walletService.findOne({ user_id });
+    return await this.knex('transactions').where({ wallet_id: wallet.id });
+  }
+
+  async getTransactionsByType(user_id, txn_type: string) {
+    const wallet = await this.walletService.findOne({ user_id });
+    return await this.knex('transactions').where({
+      txn_type,
+      wallet_id: wallet.id,
+    });
   }
 }
