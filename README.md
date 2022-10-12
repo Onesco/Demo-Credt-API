@@ -3,7 +3,7 @@ Demo Credit Server API is a [nestjs](https://nestjs.com) projects that is built 
 * NodeJS (LTS version)
 * KnexJS ORM
 * MySQL database
-* Typescript (optional)
+* Typescript
 
 ## Description
 
@@ -38,6 +38,10 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+## Configuring the application
+from the root of the application you will see a .env.example file that illustrate all the needed configuration you need configure, like database name, database password etc. Change the values for all the environment variables.
+
 ## Running migrations
 in order to create all the nedeed database tables, you need to run following knex migration commands
 
