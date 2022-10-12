@@ -1,11 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ForbiddenException,
+  HttpStatus,
+} from '@nestjs/common';
 
 import { DatabaseService } from '../../database/database.service';
-
-type IwalletFilter = {
-  id?: number;
-  user_id?: number;
-};
+import { IwalletFilter, IUser } from '../types/type.user';
 
 @Injectable()
 export class WalletService {
@@ -14,7 +15,13 @@ export class WalletService {
   knex = this.databaseService.getDbHandler();
   private readonly logger = new Logger(WalletService.name);
 
-  async findAll() {
+  async findAll(user: IUser) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException({
+        status: HttpStatus.FORBIDDEN,
+        error: ` you don't have right to this content`,
+      });
+    }
     return await this.knex('wallets');
   }
 
