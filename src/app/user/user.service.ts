@@ -219,7 +219,6 @@ export class UserService {
 
     // check for receiver's wallet detail
     const receiverWallet = await this.walletService.findOne({ user_id: to });
-    console.log(receiverWallet);
     if (!receiverWallet) {
       throw new BadRequestException({
         status: HttpStatus.BAD_REQUEST,
