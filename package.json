@@ -1,8 +1,8 @@
 {
   "name": "demo-credit-app-api",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "version": "1.0.0",
+  "description": " Demo Credit API",
+  "author": "Onesmus",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
