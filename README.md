@@ -92,9 +92,7 @@ $ npm run test:cov
 http://localhost:4000/api
 
 **production**
-http://onesmus-okonkw-lendsqr-be-test/api
-
-
+https://onesmus-okonkw-lendsqr-be-test.herokuapp.com/api
 
 
 ## Stay in touch
